@@ -52,14 +52,16 @@ DEMO_TEMPLATE = """
     ],
 )
 def test_link_attributes(attributes: str, expected_link: Link) -> None:
+    pkg_name = "demo"
+    pkg_version = "0.1"
     anchor = (
         f'<a href="https://example.org/demo-0.1.whl" {attributes}>demo-0.1.whl</a><br/>'
     )
     content = DEMO_TEMPLATE.format(anchor)
     page = HTMLPage("https://example.org", content)
 
-    assert len(list(page.links)) == 1
-    link = list(page.links)[0]
+    assert len(list(page.links[pkg_name][pkg_version])) == 1
+    link = list(page.links[pkg_name][pkg_version])[0]
     assert link.url == expected_link.url
     assert link.requires_python == expected_link.requires_python
     assert link.yanked == expected_link.yanked

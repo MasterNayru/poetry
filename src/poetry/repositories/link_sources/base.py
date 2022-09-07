@@ -48,24 +48,33 @@ class LinkSource:
         name = canonicalize_name(name)
         seen: set[Version] = set()
 
-        for link in self.links:
-            pkg = self.link_package_data(link)
+        if not self.links or name not in self.links:
+            return []
 
-            if pkg and pkg.name == name and pkg.version not in seen:
-                seen.add(pkg.version)
-                yield pkg.version
+        for version, links in self.links[name].items():
+            for link in links:
+                if not link:
+                    continue
+
+                pkg = self.link_package_data(link)
+
+                if pkg and pkg.version not in seen:
+                    seen.add(pkg.version)
+                    yield pkg.version
 
     @property
     def packages(self) -> Iterator[Package]:
-        for link in self.links:
-            pkg = self.link_package_data(link)
+        for pkg_name, versions in self.links.items():
+            for version, links in versions.items():
+                for link in links:
+                    pkg = self.link_package_data(link)
 
-            if pkg:
-                yield pkg
+                    if pkg:
+                        yield pkg
 
     @property
     @abstractmethod
-    def links(self) -> Iterator[Link]:
+    def links(self) -> Dict[Link]:
         raise NotImplementedError()
 
     @classmethod
@@ -101,12 +110,12 @@ class LinkSource:
 
     def links_for_version(
         self, name: NormalizedName, version: Version
-    ) -> Iterator[Link]:
-        for link in self.links:
-            pkg = self.link_package_data(link)
+    ) -> [Link]:
+        version = str(version)
+        if name not in self.links or version not in self.links[name]:
+            return []
 
-            if pkg and pkg.name == name and pkg.version == version:
-                yield link
+        return self.links[name][version]
 
     def clean_link(self, url: str) -> str:
         """Makes sure a link is fully encoded.  That is, if a ' ' shows up in

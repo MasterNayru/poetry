@@ -26,15 +26,17 @@ def link_source(mocker: MockerFixture) -> LinkSource:
     mocker.patch(
         f"{LinkSource.__module__}.{LinkSource.__qualname__}.links",
         new_callable=PropertyMock,
-        return_value=iter(
-            [
-                Link(f"{url}/demo-0.1.0.tar.gz"),
-                Link(f"{url}/demo-0.1.0_invalid.tar.gz"),
-                Link(f"{url}/invalid.tar.gz"),
-                Link(f"{url}/demo-0.1.0-py2.py3-none-any.whl"),
-                Link(f"{url}/demo-0.1.1.tar.gz"),
-            ]
-        ),
+        return_value={
+            "demo": {
+                "0.1.0": [
+                    Link(f"{url}/demo-0.1.0.tar.gz"),
+                    Link(f"{url}/demo-0.1.0-py2.py3-none-any.whl"),
+                ],
+                "0.1.1": [
+                    Link(f"{url}/demo-0.1.1.tar.gz"),
+                ]
+            }
+        }
     )
     return link_source
 
